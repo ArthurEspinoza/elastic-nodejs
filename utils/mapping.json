@@ -1,0 +1,10 @@
+[
+    {
+        "userAttribute": "organization",
+        "searchField": "taxonomy"
+    },
+    {
+        "userAttribute": "department",
+        "searchField": "contentType"
+    }
+]
