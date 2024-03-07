@@ -353,11 +353,18 @@ const formatContent = async(req,res) => {
     const items = body.items;
     let temp = {};
     let bulkObject = [];
+    let taxonomies = "";
     items.forEach((item) => {
         temp = contentController(item.contentFields);
+        // Check taxonomy logic
+        if(item.taxonomyCategoryBriefs && item.taxonomyCategoryBriefs.length > 0){
+            let values = item.taxonomyCategoryBriefs.map(item => item.taxonomyCategoryName);
+            taxonomies = values.join(",");
+        }else taxonomies = "";
         bulkObject.push({
             title: item.title,
             id: item.uuid,
+            taxonomies,
             componentData: temp
         });
     });
