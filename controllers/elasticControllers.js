@@ -304,6 +304,69 @@ const deleteDocument = async(req, res) => {
     }
 }
 
+const contentController = (items) => {
+    let temp = {};
+    let fieldname = "";
+    let value = "";
+    let fieldType = "";
+    let documentData;
+    items.forEach((field) =>{
+        fieldname = field.name;
+        fieldType = field.dataType;
+        if(field.nestedContentFields && field.nestedContentFields.length > 0){
+            temp = {...temp, [fieldname]: {...contentController(field.nestedContentFields)}}
+            return temp;
+        }else if(fieldType === "document"){
+            if(field.contentFieldValue && field.contentFieldValue.document){
+                documentData = field.contentFieldValue.document;
+                value = {
+                    fileName: documentData.title || "",
+                    url: documentData.contentUrl || "",
+                    size: documentData.sizeInBytes || 0
+                }
+            }else{
+                value = {};
+            }
+        }else if(fieldType === "image"){
+            if(field.contentFieldValue && field.contentFieldValue.image){
+                documentData = field.contentFieldValue.image;
+                value = {
+                    url: documentData.contentUrl || "",
+                    altText: documentData.description || ""
+                }
+            }else{
+                value = {};
+            }
+        }else{
+            if(field.contentFieldValue && field.contentFieldValue.data) value = field.contentFieldValue.data;
+            else value = "";
+        }
+        temp[fieldname] = value;
+        value = "";
+    });
+    value = null;
+    return temp;
+}
+
+const formatContent = async(req,res) => {
+    const body = req.body;
+    const items = body.items;
+    let temp = {};
+    let bulkObject = [];
+    items.forEach((item) => {
+        temp = contentController(item.contentFields);
+        bulkObject.push({
+            title: item.title,
+            id: item.uuid,
+            componentData: temp
+        });
+    });
+    res.json({
+        status: "OK",
+        data: bulkObject
+    }) 
+}
+
 module.exports = {
     getAllDocuments,
     getDocumentById,
@@ -315,5 +378,6 @@ module.exports = {
     searchDocuments,
     searchDocumentsForApp,
     updateDocument,
-    deleteDocument
+    deleteDocument,
+    formatContent
 }

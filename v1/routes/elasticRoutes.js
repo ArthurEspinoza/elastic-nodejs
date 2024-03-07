@@ -379,6 +379,7 @@ router.post("/search", (req, res) => elasticController.searchDocuments(req, res)
 router.post("/search-app", (req, res) => elasticController.searchDocumentsForApp(req, res));
 router.put("/document/:id", (req, res) => elasticController.updateDocument(req, res));
 router.delete("/document/:id", (req, res) => elasticController.deleteDocument(req, res));
+router.post("/content", (req, res) => elasticController.formatContent(req, res));
 
 
 module.exports = router;
