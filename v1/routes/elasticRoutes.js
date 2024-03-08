@@ -14,6 +14,11 @@ const elasticController = require("../../controllers/elasticControllers");
  *        schema:
  *          type: string
  *        description: Send "true" to tell the response to return the complete information of the document
+ *      - in: query
+ *        name: size
+ *        schema:
+ *          type: string
+ *        description: Send the number of documents to retrieve, by default is 10
  *     tags:
  *       - Documents
  *     responses:
@@ -315,17 +320,16 @@ const elasticController = require("../../controllers/elasticControllers");
  *     tags:
  *       - Documents
  *     parameters:
- *      - in: header
- *        name: userId
- *        schema:
- *          type: string
- *        description: ID of the user that excecute the request
- *        required: true
-  *      - in: query
+ *      - in: query
  *        name: complete
  *        schema:
  *          type: string
  *        description: Send "true" to tell the response to return the complete information of the document
+*      - in: query
+ *        name: size
+ *        schema:
+ *          type: string
+ *        description: Send the number of documents to retrieve, by default is 10
  *     requestBody:
  *       required: true
  *       content:

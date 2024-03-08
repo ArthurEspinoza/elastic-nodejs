@@ -34,7 +34,7 @@ const getAllDocuments = async (req, res) => {
 
 const getDocumentById = async(req, res) => {
     const {id} = req.params;
-    const complete = req.query.complete
+    const complete = req.query.complete;
     try {
         const document = await elasticService.getDocumentById(id);
         let data = {};
@@ -46,25 +46,6 @@ const getDocumentById = async(req, res) => {
         res.json({
             status: "OK",
             data: data
-        })
-    } catch (error) {
-        res.status(402).json({
-            status: "Failed",
-            message: error
-        })
-    }
-}
-
-const getAllDocumentsInfo = async (req, res) => {
-    try {
-        const result = await elasticService.getAllDocuments();
-        let items = result.data.hits.hits ? result.data.hits.hits : [];
-        res.json({
-            status: "OK",
-            data: {
-                items,
-                total: items.length
-            }
         })
     } catch (error) {
         res.status(402).json({
@@ -141,14 +122,15 @@ const bulkOperation = async(req, res) => {
 
 const searchDocuments = async(req, res) => {
     let complete = req.query.complete;
-    let {userid} = req.headers;
-    if(!userid) {
-        res.status(400).json({
-            status: "Failed",
-            message: "Missing userId on the request headers"
-        });
-        return;
-    }
+    let size = req.query.size;
+    //let {userid} = req.headers;
+    // if(!userid) {
+    //     res.status(400).json({
+    //         status: "Failed",
+    //         message: "Missing userId on the request headers"
+    //     });
+    //     return;
+    // }
     const { andQuery, orQuery } = req.body;
     let boolQuery = {};
     if(andQuery){
@@ -160,25 +142,26 @@ const searchDocuments = async(req, res) => {
     if((boolQuery.must && boolQuery.must.length > 0) ||
       (boolQuery.should && boolQuery.should.length > 0)){
         try {
-            let mapping = await users.getMapping(userid);
-            let accessGroup = await users.getAccessGroup(userid);
-            let accessQuery = [];
-            accessQuery =
-                mapping.map(function(item){
-                return {
-                    match:{
-                    [item.searchField]: item.searchValue
-                    }
-                }
-                });
-            if(boolQuery.hasOwnProperty("must")){
-                boolQuery.must = [...boolQuery.must, ...accessQuery];
-            }else{
-                boolQuery.must = [...accessQuery];
-            }
-            if(accessGroup !== process.env.VITE_ELASTIC_ADMIN_VALUE) boolQuery.must.push({match:{"accessGroup": accessGroup}});
+            // let mapping = await users.getMapping(userid);
+            // let accessGroup = await users.getAccessGroup(userid);
+            // let accessQuery = [];
+            // accessQuery =
+            //     mapping.map(function(item){
+            //     return {
+            //         match:{
+            //         [item.searchField]: item.searchValue
+            //         }
+            //     }
+            //     });
+            // if(boolQuery.hasOwnProperty("must")){
+            //     boolQuery.must = [...boolQuery.must, ...accessQuery];
+            // }else{
+            //     boolQuery.must = [...accessQuery];
+            // }
+            // if(accessGroup !== process.env.VITE_ELASTIC_ADMIN_VALUE) boolQuery.must.push({match:{"accessGroup": accessGroup}});
             let queryBody = {
                 index: process.env.VITE_ELASTIC_INDEX,
+                size,
                 query: {
                 bool: boolQuery
                 }
@@ -195,70 +178,8 @@ const searchDocuments = async(req, res) => {
             }
             res.json({
                 status: "OK",
-                data: items
-            })
-        } catch (error) {
-            console.log(error);
-            res.status(404).json({"status": "Failed", "error": error})
-        }
-    }else{
-        res.status(404).json({
-            status: "Failed",
-            message: "To search, please send a body within an andQuery or orQuery"
-        })
-    }
-}
-const searchDocumentsForApp = async(req, res) => {
-    let {userid} = req.headers;
-    if(!userid) {
-        res.status(400).json({
-            status: "Failed",
-            message: "Missing userId on the request headers"
-        });
-        return;
-    }
-    const { andQuery, orQuery } = req.body;
-    let boolQuery = {};
-    if(andQuery){
-      boolQuery.must = buildQuery(andQuery);
-    }
-    if(orQuery){
-      boolQuery.should = buildQuery(orQuery);
-    }
-    if((boolQuery.must && boolQuery.must.length > 0) ||
-      (boolQuery.should && boolQuery.should.length > 0)){
-        try {
-            let mapping = await users.getMapping(userid);
-            let accessGroup = await users.getAccessGroup(userid);
-            let accessQuery = [];
-            accessQuery =
-                mapping.map(function(item){
-                return {
-                    match:{
-                    [item.searchField]: item.searchValue
-                    }
-                }
-                });
-            if(boolQuery.hasOwnProperty("must")){
-                boolQuery.must = [...boolQuery.must, ...accessQuery];
-            }else{
-                boolQuery.must = [...accessQuery];
-            }
-            if(accessGroup !== process.env.VITE_ELASTIC_ADMIN_VALUE) boolQuery.must.push({match:{"accessGroup": accessGroup}});
-            let queryBody = {
-                index: process.env.VITE_ELASTIC_INDEX,
-                query: {
-                bool: boolQuery
-                }
-            };
-            const documents = await elasticService.searchDocuments(queryBody);
-            let items = [];
-            if(documents.hits && documents.hits.hits){
-                items = documents.hits.hits;
-            }
-            res.json({
-                status: "OK",
-                data: items
+                data: items,
+                total: items.length
             })
         } catch (error) {
             console.log(error);
@@ -378,13 +299,11 @@ const formatContent = async(req,res) => {
 module.exports = {
     getAllDocuments,
     getDocumentById,
-    getAllDocumentsInfo,
     getIndexMapping,
     createDocument,
     createDocumentWithId,
     bulkOperation,
     searchDocuments,
-    searchDocumentsForApp,
     updateDocument,
     deleteDocument,
     formatContent
