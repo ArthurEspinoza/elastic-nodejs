@@ -1,8 +1,8 @@
 const elastic = require("../utils/elastic");
 
-const getAllDocuments = async() => {
+const getAllDocuments = async(size) => {
     try {
-        let documents = await elastic.client.search({index: process.env.ELASTIC_INDEX});
+        let documents = await elastic.client.search({index: process.env.ELASTIC_INDEX, size});
         return { data: documents}
     } catch (error) {
         return { error }

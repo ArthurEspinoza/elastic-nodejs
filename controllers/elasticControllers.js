@@ -4,8 +4,9 @@ const users = require("../utils/users");
 
 const getAllDocuments = async (req, res) => {
     let complete = req.query.complete;
+    let size = req.query.size;
     try {
-        const result = await elasticService.getAllDocuments();
+        const result = await elasticService.getAllDocuments(size);
         let items = [];
         if(complete && complete ==="true"){
             items = result.data.hits.hits ? result.data.hits.hits : [];
