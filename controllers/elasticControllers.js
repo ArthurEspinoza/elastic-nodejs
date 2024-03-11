@@ -296,6 +296,10 @@ const formatContent = async(req,res) => {
     }) 
 }
 
+const uploadFile = (req, res) => {
+    res.json(req.file);
+}
+
 module.exports = {
     getAllDocuments,
     getDocumentById,
@@ -306,5 +310,6 @@ module.exports = {
     searchDocuments,
     updateDocument,
     deleteDocument,
-    formatContent
+    formatContent,
+    uploadFile
 }
